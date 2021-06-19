@@ -443,6 +443,7 @@ static int spinand_wait(struct spinand_device *spinand, u8 *s)
 
 		if (!(status & STATUS_BUSY))
 			goto out;
+
 	} while (get_timer(start) < stop);
 
 	/*
@@ -456,7 +457,8 @@ static int spinand_wait(struct spinand_device *spinand, u8 *s)
 out:
 	if (s)
 		*s = status;
-
+	if(status & STATUS_BUSY)
+		printf("t\n");
 	return status & STATUS_BUSY ? -ETIMEDOUT : 0;
 }
 
@@ -714,6 +716,7 @@ static int spinand_mtd_block_isbad(struct mtd_info *mtd, loff_t offs)
 	return ret;
 }
 
+#ifndef CONFIG_SPL_BUILD
 static int spinand_markbad(struct nand_device *nand, const struct nand_pos *pos)
 {
 	struct spinand_device *spinand = nand_to_spinand(nand);
@@ -797,6 +800,7 @@ static int spinand_mtd_erase(struct mtd_info *mtd,
 
 	return ret;
 }
+#endif
 
 static int spinand_mtd_block_isreserved(struct mtd_info *mtd, loff_t offs)
 {
@@ -844,12 +848,12 @@ static const struct nand_ops spinand_ops = {
 };
 
 static const struct spinand_manufacturer *spinand_manufacturers[] = {
-	&gigadevice_spinand_manufacturer,
+	//&gigadevice_spinand_manufacturer,
 	&longsys_spinand_manufacturer,
-	&macronix_spinand_manufacturer,
-	&micron_spinand_manufacturer,
-	&toshiba_spinand_manufacturer,
-	&winbond_spinand_manufacturer,
+	//&macronix_spinand_manufacturer,
+	//&micron_spinand_manufacturer,
+	//&toshiba_spinand_manufacturer,
+	//&winbond_spinand_manufacturer,
 };
 
 static int spinand_manufacturer_detect(struct spinand_device *spinand)
@@ -984,11 +988,10 @@ static int spinand_detect(struct spinand_device *spinand)
 	struct nand_device *nand = spinand_to_nand(spinand);
 	int ret;
 
-printf("xx 1\n");
 	ret = spinand_reset_op(spinand);
 	if (ret)
 		return ret;
-printf("xx 2\n");
+
 	ret = spinand_read_id_op(spinand, spinand->id.data);
 	if (ret)
 		return ret;
