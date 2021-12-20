@@ -126,6 +126,12 @@ int embedded_dtb_select(void)
 
 
 int board_late_init(void){
+	// hacks!
+	// set mmc pinctrl
+	*((u32*)0x1f203c20) = 0x100;
+	*((u32*)0x1f226694) = 0x8; // set secondary sdio gate to clkgen
+	*((u32*)0x1f207114) = 0x18; // degate sdio clock
+
 	return 0;
 }
 
